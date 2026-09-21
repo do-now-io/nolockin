@@ -1,0 +1,41 @@
+apiVersion: v2
+name: nolockin
+description: NoLockIn, le PaaS open source que vous pouvez quitter. Chart umbrella du control plane.
+type: application
+version: 0.0.1-spec
+appVersion: 0.0.1
+home: https://nolockin.io
+sources:
+  - https://github.com/do-now-io/nolockin
+keywords: [paas, kubernetes, gitops, argocd, buildpacks, no-lock-in]
+# Dépendances prévues (versions à figer au jalon M1). Voir docs/01-architecture.md.
+dependencies:
+  - name: argo-cd
+    repository: https://argoproj.github.io/argo-helm
+    version: "~7.0"
+    condition: argocd.enabled
+  - name: kube-prometheus-stack
+    repository: https://prometheus-community.github.io/helm-charts
+    version: "~65.0"
+    condition: observability.enabled
+  - name: loki
+    repository: https://grafana.github.io/helm-charts
+    version: "~6.0"
+    condition: observability.logs.enabled
+  - name: cloudnative-pg
+    repository: https://cloudnative-pg.github.io/charts
+    version: "~0.22"
+    condition: addons.postgres.enabled
+  - name: cert-manager
+    repository: https://charts.jetstack.io
+    version: "~1.16"
+    condition: gateway.certManager.enabled
+  - name: gateway-helm
+    alias: envoy-gateway
+    repository: oci://docker.io/envoyproxy
+    version: "~1.2"
+    condition: gateway.enabled
+  - name: dex
+    repository: https://charts.dexidp.io
+    version: "~0.19"
+    condition: auth.dex.enabled

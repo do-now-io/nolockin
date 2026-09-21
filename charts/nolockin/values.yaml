@@ -1,0 +1,72 @@
+# Values du chart umbrella NoLockIn. Scaffold : les clés reflètent la spec, les templates arrivent au jalon M1.
+
+global:
+  # Domaine du control plane : api.<domain>, grafana.<domain>, argocd.<domain>
+  domain: nlk.example.internal
+  # Wildcard pour les sous-domaines fournis aux apps (optionnel)
+  appsDomain: ""
+  # Profil de ressources : prod | dev (kind, réplicas à 1, rétentions courtes)
+  profile: prod
+
+controlPlane:
+  api: { replicas: 2 }
+  operator: { replicas: 2 }
+  manifestStore:
+    mode: embedded          # embedded (Gitea) | external
+    mirrorTo: ""            # dépôt Git externe où pousser une copie de l'historique
+
+billing:
+  mode: showback            # stripe | showback | off
+  pricing: pricing/fr-par.yaml
+  stripe:
+    secretRef: ""           # Secret contenant la clé API (mode stripe uniquement)
+
+auth:
+  oidc:
+    issuer: ""              # laisser vide pour utiliser Dex embarqué
+    clientId: nolockin
+  dex:
+    enabled: true
+    connectors: []          # github, google, ldap, saml...
+
+gateway:
+  enabled: true
+  certManager:
+    enabled: true
+    email: ops@example.com
+    solver: http01          # http01 | dns01
+  publicIPs: 1
+
+observability:
+  enabled: true
+  metrics: { retention: 15d, replicas: 2, remoteWrite: [] }
+  logs: { enabled: true, defaultRetention: 7d }
+  tracing: { enabled: false }
+  grafana: { defaultRole: Viewer }
+
+argocd:
+  enabled: true
+  userAccess: readonly      # readonly | sync (owners peuvent sync/rollback)
+
+build:
+  buildpacks: { enabled: true, builder: paketobuildpacks/builder-jammy-base }
+  dockerfile: { enabled: true }
+  registry:
+    mode: embedded          # embedded (distribution) | external
+    external: { url: "", secretRef: "" }
+
+addons:
+  postgres: { enabled: true, defaultStorageClass: "" }
+  redis: { enabled: true }
+  bucket: { enabled: true, backend: minio }
+
+security:
+  podSecurityStandard: restricted
+  runtimeClass: ""          # runsc (gVisor) sur le cloud hébergé
+  imagePolicy: { requireSignature: false, blockCritical: false }
+
+exit:
+  # Clé publique age du cluster : les bundles exportés vers ce contexte sont chiffrés avec.
+  # Générée automatiquement à l'installation si vide.
+  agePublicKey: ""
+  gracePeriodDays: 30

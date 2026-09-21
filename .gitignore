@@ -1,0 +1,8 @@
+.DS_Store
+node_modules/
+dist/
+*.nlkbundle
+
+# Généré par site/build-docs.py, publié par la CI
+site/docs/
+public/

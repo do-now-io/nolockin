@@ -1,0 +1,82 @@
+# Site vitrine + documentation.
+# À chaque push sur main : régénère site/docs/ depuis les Markdown, vérifie les liens, publie.
+# Sur une PR : construit et vérifie seulement (le rendu est téléchargeable en artefact de build).
+#
+# Cibles de publication (les deux peuvent être actives) :
+#   - GitHub Pages : activer Settings → Pages → Source : « GitHub Actions ». Rien d'autre.
+#   - Scaleway Object Storage (souverain, fr-par) : définir la variable de dépôt SCW_BUCKET
+#     et les secrets SCW_ACCESS_KEY / SCW_SECRET_KEY. Le bucket doit avoir l'option « site web »
+#     activée (voir site/README.md).
+name: site
+
+on:
+  push:
+    branches: [main]
+    paths: [docs/**, examples/**, charts/nolockin/README.md, charts/nolockin/values.yaml, charts/nolockin/Chart.yaml, README.md, site/**, .github/workflows/site.yml]
+  pull_request:
+    paths: [docs/**, examples/**, charts/**, README.md, site/**]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Générer la documentation
+        run: python3 site/build-docs.py
+      - name: Vérifier les liens et les ancres
+        run: python3 site/check-docs.py
+      - name: Assembler le site
+        run: |
+          mkdir -p public
+          cp site/index.html site/404.html public/
+          cp -r site/docs public/docs
+          # GitHub Pages : pas de traitement Jekyll
+          touch public/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: public }
+
+  deploy-pages:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+        with: { enablement: true }   # active GitHub Pages (source : Actions) si ce n'est pas déjà fait
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  deploy-scaleway:
+    if: github.event_name != 'pull_request' && vars.SCW_BUCKET != ''
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      AWS_DEFAULT_REGION: fr-par
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: github-pages, path: dist }
+      - name: Décompresser l'artefact Pages
+        run: mkdir -p public && tar -xf dist/artifact.tar -C public
+      - name: Synchroniser vers le bucket
+        run: |
+          aws s3 sync public/ "s3://${{ vars.SCW_BUCKET }}/" \
+            --endpoint-url https://s3.fr-par.scw.cloud \
+            --delete --exclude ".nojekyll" \
+            --cache-control "public, max-age=300"

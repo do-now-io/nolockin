@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="NoLockIn est un PaaS open source sur Kubernetes. Déployez en une commande, payez à la seconde, partez quand vous voulez : la même plateforme s'installe sur votre cluster.">
+<title>NoLockIn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+</head>
+<body>
+<!--NLK:START-->
+<style>
+:root{
+  --bg:#F2F5F1; --bg-2:#FFFFFF; --bg-3:#E6ECE7;
+  --ink:#0F1D16; --ink-2:#4A5A51; --ink-3:#7C8A82;
+  --line:#D3DCD5; --line-2:#BFCBC2;
+  --accent:#0E8A4A; --accent-ink:#0A6B39; --accent-soft:#DCF2E5; --accent-on:#FFFFFF;
+  --term-bg:#0C1711; --term-ink:#DCE8DF; --term-dim:#7E9686; --term-accent:#3DD68C; --term-warn:#F2B84B;
+  --series:#2E7FB0; --series-soft:rgba(46,127,176,.14);
+  --good:#0E8A4A; --warn:#B8790A; --bad:#C43D3D;
+  --shadow:0 1px 2px rgba(15,29,22,.06),0 12px 32px -16px rgba(15,29,22,.18);
+  --cta-bg:#0F1D16; --cta-ink:#F2F5F1; --panel-code:#FFFFFF;
+  --r:6px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1410; --bg-2:#111C16; --bg-3:#18251E;
+    --ink:#E6EEE8; --ink-2:#A6B6AC; --ink-3:#718278;
+    --line:#22322A; --line-2:#2E4036;
+    --accent:#3DD68C; --accent-ink:#5FE3A3; --accent-soft:#12301F; --accent-on:#07130C;
+    --term-bg:#060D09; --term-ink:#DCE8DF; --term-dim:#6F877A;
+    --series:#6FB6E6; --series-soft:rgba(111,182,230,.16);
+    --good:#3DD68C; --warn:#E0A83A; --bad:#E36B6B;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px -16px rgba(0,0,0,.6);
+    --cta-bg:#18251E; --cta-ink:#E6EEE8; --panel-code:#07130C;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1410; --bg-2:#111C16; --bg-3:#18251E;
+  --ink:#E6EEE8; --ink-2:#A6B6AC; --ink-3:#718278;
+  --line:#22322A; --line-2:#2E4036;
+  --accent:#3DD68C; --accent-ink:#5FE3A3; --accent-soft:#12301F; --accent-on:#07130C;
+  --term-bg:#060D09; --term-ink:#DCE8DF; --term-dim:#6F877A;
+  --series:#6FB6E6; --series-soft:rgba(111,182,230,.16);
+  --good:#3DD68C; --warn:#E0A83A; --bad:#E36B6B;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px -16px rgba(0,0,0,.6);
+  --cta-bg:#18251E; --cta-ink:#E6EEE8; --panel-code:#07130C;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.55 "IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:Overpass,"Helvetica Neue",Arial,sans-serif;line-height:1.05;letter-spacing:-.015em;margin:0;text-wrap:balance}
+h1{font-weight:900;font-size:clamp(2.6rem,6.2vw,4.8rem)}
+h2{font-weight:800;font-size:clamp(1.9rem,3.6vw,2.8rem)}
+h3{font-weight:700;font-size:1.25rem;letter-spacing:0}
+p{margin:0}
+a{color:inherit}
+code,pre,kbd,.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+code{font-size:.92em;background:var(--bg-3);padding:.1em .35em;border-radius:4px}
+.tnum{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(20px,4vw,48px)}
+.lede{font-size:1.15rem;color:var(--ink-2);max-width:60ch}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font:600 .72rem/1 "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-on);background:var(--accent);padding:.5rem .7rem .45rem;border-radius:3px;
+}
+.eyebrow.ghost{background:transparent;color:var(--accent-ink);padding:0}
+.eyebrow svg{width:.9rem;height:.9rem;flex:none}
+.btn{
+  display:inline-flex;align-items:center;gap:.55rem;padding:.8rem 1.15rem;border-radius:var(--r);
+  font:600 .95rem/1 "IBM Plex Sans",sans-serif;text-decoration:none;border:1px solid transparent;cursor:pointer;
+  transition:transform .12s ease,background .12s ease,border-color .12s ease;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:var(--accent);color:var(--accent-on);border-color:var(--accent)}
+.btn.primary:hover{background:var(--accent-ink)}
+.btn.ghost{background:var(--bg-2);color:var(--ink);border-color:var(--line-2)}
+.btn.ghost:hover{border-color:var(--ink-3)}
+.btn kbd{font-size:.85em;background:rgba(0,0,0,.12);padding:.15em .4em;border-radius:3px}
+
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem}
+.logo{display:flex;align-items:center;gap:.6rem;text-decoration:none;font:900 1.25rem/1 Overpass,sans-serif;letter-spacing:-.02em}
+.logo .mark{width:30px;height:30px}
+.nav ul{display:flex;gap:1.6rem;list-style:none;margin:0;padding:0;font-size:.92rem;color:var(--ink-2)}
+.nav ul a{text-decoration:none}
+.nav ul a:hover{color:var(--ink)}
+.nav .actions{display:flex;gap:.6rem;align-items:center}
+.nav .btn{padding:.6rem .9rem}
+@media (max-width:860px){.nav ul{display:none}}
+
+/* ---------- hero ---------- */
+.hero{padding:clamp(56px,8vw,104px) 0 clamp(40px,6vw,72px)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(28px,5vw,64px);align-items:center}
+.hero-copy{display:flex;flex-direction:column;gap:1.4rem;align-items:flex-start}
+.hero h1 .exit{color:var(--accent-ink)}
+.hero-cta{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center}
+.hero-proof{display:flex;gap:1.6rem;flex-wrap:wrap;color:var(--ink-2);font-size:.9rem;padding-top:.4rem;border-top:1px solid var(--line);width:100%}
+.hero-proof b{color:var(--ink);font-weight:600}
+.hero-proof span{display:flex;align-items:center;gap:.45rem}
+.hero-proof svg{width:1rem;height:1rem;color:var(--accent-ink)}
+@media (max-width:900px){.hero .wrap{grid-template-columns:1fr}}
+
+/* ---------- terminal ---------- */
+.term{
+  background:var(--term-bg);color:var(--term-ink);border-radius:10px;box-shadow:var(--shadow);
+  font:14px/1.55 "IBM Plex Mono",monospace;overflow:hidden;border:1px solid rgba(255,255,255,.06);
+}
+.term-bar{display:flex;align-items:center;gap:.5rem;padding:.65rem .9rem;border-bottom:1px solid rgba(255,255,255,.07);color:var(--term-dim);font-size:.78rem}
+.term-bar .dots{display:flex;gap:.35rem}
+.term-bar .dots i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.12);display:block}
+.term-bar .title{margin-left:auto}
+.term-body{padding:1rem 1.1rem 1.1rem;min-height:340px;white-space:pre-wrap;word-break:break-word}
+.term .prompt{color:var(--term-accent)}
+.term .dim{color:var(--term-dim)}
+.term .ok{color:var(--term-accent)}
+.term .warn{color:var(--term-warn)}
+.term .url{color:var(--term-ink);text-decoration:underline;text-decoration-color:var(--term-accent)}
+.term .cursor{display:inline-block;width:.6em;height:1.1em;background:var(--term-accent);vertical-align:-.2em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.term-tabs{display:flex;gap:.25rem;padding:.5rem .6rem 0;background:var(--term-bg)}
+.term-tabs button{
+  font:500 .78rem/1 "IBM Plex Mono",monospace;color:var(--term-dim);background:transparent;border:1px solid transparent;
+  border-bottom:none;padding:.55rem .8rem;border-radius:6px 6px 0 0;cursor:pointer;
+}
+.term-tabs button[aria-selected="true"]{color:var(--term-ink);background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08)}
+
+/* ---------- sections ---------- */
+section{padding:clamp(56px,7vw,96px) 0}
+.sec-head{display:flex;flex-direction:column;gap:1rem;align-items:flex-start;margin-bottom:clamp(28px,4vw,48px);max-width:760px}
+.sec-head .lede{font-size:1.08rem}
+
+/* guarantees */
+.guar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.guar article{background:var(--bg-2);padding:1.6rem 1.5rem 1.7rem;display:flex;flex-direction:column;gap:.9rem}
+.guar .glyph{width:40px;height:40px;color:var(--accent-ink)}
+.guar h3{font-size:1.35rem}
+.guar p{color:var(--ink-2);font-size:.97rem}
+.guar .fact{margin-top:auto;padding-top:.9rem;border-top:1px dashed var(--line-2);font:500 .82rem/1.4 "IBM Plex Mono",monospace;color:var(--ink-2)}
+.guar .fact b{color:var(--accent-ink);font-weight:600}
+@media (max-width:900px){.guar{grid-template-columns:1fr}}
+
+/* console mock */
+.console-sec{background:var(--bg-3);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.console{
+  background:var(--bg-2);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;
+  display:grid;grid-template-columns:200px minmax(0,1fr);min-height:560px;
+}
+.console .side{background:var(--bg);border-right:1px solid var(--line);padding:1rem .9rem;display:flex;flex-direction:column;gap:.15rem;font-size:.88rem}
+.console .side .proj{font:600 .7rem/1 "IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);padding:.4rem .5rem .7rem}
+.console .side a{display:flex;align-items:center;gap:.55rem;padding:.5rem .6rem;border-radius:6px;text-decoration:none;color:var(--ink-2)}
+.console .side a svg{width:15px;height:15px;opacity:.8}
+.console .side a.on{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+.console .side .sep{height:1px;background:var(--line);margin:.6rem .4rem}
+.console .main{padding:1.1rem 1.25rem 1.25rem;display:flex;flex-direction:column;gap:1rem;min-width:0}
+.console .crumbs{display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--ink-3)}
+.console .crumbs b{color:var(--ink);font-weight:600}
+.console .apphead{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.console .apphead h3{font-size:1.5rem;display:flex;align-items:center;gap:.7rem}
+.pill{display:inline-flex;align-items:center;gap:.35rem;font:600 .72rem/1 "IBM Plex Mono",monospace;padding:.35rem .55rem .3rem;border-radius:999px;border:1px solid var(--line-2);color:var(--ink-2);background:var(--bg)}
+.pill.good{color:var(--good);border-color:color-mix(in srgb,var(--good) 40%,transparent);background:var(--accent-soft)}
+.pill svg{width:.8rem;height:.8rem}
+.console .toolbar{display:flex;gap:.5rem;flex-wrap:wrap}
+.console .toolbar .btn{padding:.5rem .75rem;font-size:.82rem}
+
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem}
+.tile{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:.85rem .95rem .7rem;display:flex;flex-direction:column;gap:.35rem;min-width:0}
+.tile .k{font:500 .72rem/1 "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tile .v{font:700 1.45rem/1 Overpass,sans-serif;color:var(--ink);display:flex;align-items:baseline;gap:.4rem}
+.tile .v small{font:500 .75rem/1 "IBM Plex Mono",monospace;color:var(--ink-3)}
+.tile svg{width:100%;height:44px;display:block;margin-top:.2rem;overflow:visible}
+.tile .spark-line{fill:none;stroke:var(--series);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.tile .spark-area{fill:var(--series-soft)}
+.tile .spark-end{fill:var(--series);stroke:var(--bg);stroke-width:2}
+.tile .spark-grid{stroke:var(--line);stroke-width:1}
+
+.panes{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:.75rem;min-height:0}
+.pane{background:var(--bg);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.pane-h{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.65rem .9rem;border-bottom:1px solid var(--line);font-size:.82rem;color:var(--ink-2)}
+.pane-h b{color:var(--ink);font-weight:600;display:flex;align-items:center;gap:.45rem}
+.pane-h b svg{width:14px;height:14px}
+.pane-h .src{font:500 .7rem/1 "IBM Plex Mono",monospace;color:var(--ink-3)}
+.tree{list-style:none;margin:0;padding:.6rem .9rem .8rem;font:.82rem/1.9 "IBM Plex Mono",monospace;color:var(--ink-2)}
+.tree li{display:flex;align-items:center;gap:.5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tree li .kind{color:var(--ink-3);min-width:6.5ch}
+.tree li .name{color:var(--ink)}
+.tree li.l1{padding-left:1.4ch}.tree li.l2{padding-left:2.8ch}.tree li.l3{padding-left:4.2ch}
+.tree .st{margin-left:auto;display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;color:var(--good)}
+.tree .st.sync{color:var(--ink-2)}
+.tree .st svg{width:.75rem;height:.75rem}
+.tree .cnt{color:var(--ink-3);font-size:.75rem}
+.pods{width:100%;border-collapse:collapse;font:.8rem/1.4 "IBM Plex Mono",monospace}
+.pods th{font-weight:500;color:var(--ink-3);text-align:left;padding:.5rem .9rem;border-bottom:1px solid var(--line);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase}
+.pods td{padding:.5rem .9rem;border-bottom:1px solid var(--line);color:var(--ink-2);white-space:nowrap}
+.pods tr:last-child td{border-bottom:none}
+.pods td:first-child{color:var(--ink)}
+.pods .bar{display:inline-block;height:6px;border-radius:3px;background:var(--series);vertical-align:middle;margin-right:.4rem}
+.pods .dot{display:inline-block;width:.55rem;height:.55rem;border-radius:50%;background:var(--good);margin-right:.35rem;vertical-align:-.03rem}
+.logs{font:.78rem/1.6 "IBM Plex Mono",monospace;padding:.6rem .9rem .8rem;color:var(--ink-2);overflow:hidden}
+.logs .t{color:var(--ink-3)}
+.logs .lvl{color:var(--good);font-weight:600}
+.logs .lvl.w{color:var(--warn)}
+.console-note{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:1.2rem;color:var(--ink-2);font-size:.92rem}
+.console-note span{display:flex;align-items:center;gap:.45rem}
+.console-note svg{width:1rem;height:1rem;color:var(--accent-ink)}
+@media (max-width:980px){.console{grid-template-columns:1fr}.console .side{display:none}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.panes{grid-template-columns:1fr}}
+
+/* exit section: the signage panel */
+.exit-sec .panel{
+  background:var(--accent);color:var(--accent-on);border-radius:14px;padding:clamp(28px,4vw,52px);
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(24px,4vw,56px);align-items:start;
+  position:relative;overflow:hidden;
+}
+.exit-sec .panel .eyebrow{background:var(--accent-on);color:var(--accent)}
+.exit-sec .panel h2{color:var(--accent-on);font-size:clamp(2rem,4vw,3.2rem)}
+.exit-sec .panel .lede{color:var(--accent-on);opacity:.88}
+.exit-sec .pict{width:min(100%,180px);height:auto;display:block;margin-top:1rem}
+.exit-sec .copy{display:flex;flex-direction:column;gap:1.1rem}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.6rem;counter-reset:s}
+.steps li{
+  background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:.85rem 1rem .9rem 3.1rem;position:relative;
+  display:flex;flex-direction:column;gap:.35rem;
+}
+.steps li::before{
+  counter-increment:s;content:counter(s);position:absolute;left:.9rem;top:.85rem;
+  width:1.55rem;height:1.55rem;border-radius:50%;background:var(--accent-on);color:var(--accent);
+  font:800 .85rem/1.55rem Overpass,sans-serif;text-align:center;
+}
+.steps li .what{font-weight:600;font-size:.95rem}
+.steps li code{background:rgba(0,0,0,.22);color:var(--panel-code);padding:.35rem .55rem;border-radius:5px;font-size:.8rem;display:block;overflow-x:auto;white-space:nowrap}
+.steps li .when{font:500 .74rem/1 "IBM Plex Mono",monospace;opacity:.8}
+.exit-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem;margin-top:1.4rem}
+.exit-facts div{background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:1rem 1.05rem;display:flex;flex-direction:column;gap:.3rem}
+.exit-facts .n{font:800 1.7rem/1 Overpass,sans-serif;color:var(--accent-ink)}
+.exit-facts .n small{font:500 .8rem/1 "IBM Plex Mono",monospace;color:var(--ink-3);margin-left:.25rem}
+.exit-facts .l{font-size:.86rem;color:var(--ink-2)}
+@media (max-width:900px){.exit-sec .panel{grid-template-columns:1fr}.exit-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* how it works */
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem}
+.flow article{background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:1.15rem 1.15rem 1.25rem;display:flex;flex-direction:column;gap:.6rem}
+.flow .tag{font:600 .7rem/1 "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.flow h3{font-size:1.1rem}
+.flow p{color:var(--ink-2);font-size:.92rem}
+.flow .oss{margin-top:auto;padding-top:.6rem;display:flex;flex-wrap:wrap;gap:.35rem}
+.flow .oss span{font:500 .7rem/1 "IBM Plex Mono",monospace;background:var(--bg-3);border:1px solid var(--line);padding:.3rem .45rem .25rem;border-radius:4px;color:var(--ink-2)}
+@media (max-width:900px){.flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.flow{grid-template-columns:1fr}}
+.manifest{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem;align-items:start;margin-top:2.5rem}
+.manifest pre{margin:0;background:var(--term-bg);color:var(--term-ink);border-radius:10px;padding:1.1rem 1.2rem;font-size:.8rem;line-height:1.55;overflow-x:auto;border:1px solid rgba(255,255,255,.06)}
+.manifest pre .c{color:var(--term-dim)}
+.manifest pre .k{color:#9CC7E6}
+.manifest pre .s{color:var(--term-accent)}
+.manifest-copy{display:flex;flex-direction:column;gap:1rem}
+.manifest-copy ul{margin:0;padding-left:1.1rem;color:var(--ink-2);display:flex;flex-direction:column;gap:.5rem}
+@media (max-width:900px){.manifest{grid-template-columns:1fr}}
+
+/* pricing */
+.pricing{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:1.5rem;align-items:start}
+.price-table{width:100%;border-collapse:collapse;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.price-table th,.price-table td{padding:.85rem 1rem;text-align:left;border-bottom:1px solid var(--line);font-size:.93rem}
+.price-table th{font:600 .72rem/1 "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);background:var(--bg)}
+.price-table td:nth-child(2),.price-table td:nth-child(3),.price-table th:nth-child(2),.price-table th:nth-child(3){text-align:right}
+.price-table tr:last-child td{border-bottom:none}
+.price-table td.mono{font-size:.88rem}
+.price-table td.you{color:var(--accent-ink);font-weight:600}
+.price-table small{display:block;color:var(--ink-3);font-size:.78rem;font-weight:400;margin-top:.15rem}
+.price-table caption{text-align:left;padding:0 0 .6rem;color:var(--ink-3);font-size:.82rem;caption-side:bottom}
+.estim{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:1.3rem 1.35rem 1.4rem;display:flex;flex-direction:column;gap:1.1rem;box-shadow:var(--shadow)}
+.estim h3{font-size:1.15rem}
+.estim .row{display:grid;grid-template-columns:1fr auto;gap:.5rem 1rem;align-items:center}
+.estim label{font-size:.9rem;color:var(--ink-2)}
+.estim output{font:600 .9rem/1 "IBM Plex Mono",monospace;color:var(--ink);text-align:right;min-width:7ch}
+.estim input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--accent);margin:0}
+.estim .total{border-top:1px solid var(--line);padding-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.estim .total div{display:flex;flex-direction:column;gap:.25rem}
+.estim .total .k{font:500 .72rem/1 "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.estim .total .v{font:800 1.9rem/1 Overpass,sans-serif}
+.estim .total .v small{font:500 .8rem/1 "IBM Plex Mono",monospace;color:var(--ink-3)}
+.estim .total .v.you{color:var(--accent-ink)}
+.estim .breakdown{display:flex;flex-direction:column;gap:.45rem;font:.8rem/1.3 "IBM Plex Mono",monospace;color:var(--ink-2)}
+.estim .breakdown div{display:grid;grid-template-columns:8ch 1fr 7ch;gap:.6rem;align-items:center}
+.estim .breakdown i{display:block;height:6px;border-radius:3px;background:var(--series);transform-origin:left;transition:width .25s ease}
+.estim .breakdown b{text-align:right;font-weight:500;color:var(--ink)}
+.estim .note{font-size:.8rem;color:var(--ink-3)}
+@media (max-width:900px){.pricing{grid-template-columns:1fr}}
+
+/* sovereignty */
+.sov{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:clamp(24px,4vw,56px);align-items:start}
+.sov-copy{display:flex;flex-direction:column;gap:1.1rem}
+.sov-copy .plate{display:inline-flex;align-items:stretch;border:2px solid var(--ink);border-radius:8px;overflow:hidden;font-family:Overpass,sans-serif;font-weight:900;letter-spacing:.02em;align-self:flex-start}
+.sov-copy .plate .fr{background:var(--ink);color:var(--bg);padding:.55rem .75rem;font-size:1.05rem;display:flex;align-items:center}
+.sov-copy .plate .txt{padding:.55rem .9rem;font-size:1.05rem;color:var(--ink);display:flex;align-items:center;background:var(--bg-2)}
+.sov-copy .plate .txt b{color:var(--accent-ink);margin-left:.4rem}
+.sov-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+.sov-grid article{background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:1.1rem 1.15rem 1.2rem;display:flex;flex-direction:column;gap:.45rem}
+.sov-grid .k{font:600 .7rem/1 "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.sov-grid h3{font-size:1.1rem}
+.sov-grid p{color:var(--ink-2);font-size:.92rem}
+.sov-note{margin-top:1.4rem;padding:1rem 1.15rem;border:1px dashed var(--line-2);border-radius:8px;color:var(--ink-2);font-size:.92rem;display:flex;gap:.75rem;align-items:flex-start}
+.sov-note svg{width:1.1rem;height:1.1rem;flex:none;color:var(--accent-ink);margin-top:.15rem}
+.sov-note b{color:var(--ink);font-weight:600}
+@media (max-width:900px){.sov{grid-template-columns:1fr}}
+@media (max-width:560px){.sov-grid{grid-template-columns:1fr}}
+
+/* never */
+.never{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem 2rem;list-style:none;margin:0;padding:0}
+.never li{display:flex;gap:.8rem;align-items:flex-start;padding:.9rem 0;border-bottom:1px solid var(--line);color:var(--ink-2)}
+.never li svg{width:1.25rem;height:1.25rem;flex:none;color:var(--bad);margin-top:.1rem}
+.never li b{color:var(--ink);font-weight:600;display:block}
+@media (max-width:760px){.never{grid-template-columns:1fr}}
+
+/* ci proof */
+.proof{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem;align-items:center}
+.proof .term-body{min-height:0}
+.proof-copy{display:flex;flex-direction:column;gap:1rem}
+@media (max-width:900px){.proof{grid-template-columns:1fr}}
+
+/* cta */
+.cta{background:var(--cta-bg);color:var(--cta-ink)}
+.cta .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2rem;align-items:center}
+.cta h2{font-size:clamp(1.8rem,3.4vw,2.6rem)}
+.cta .lede{color:inherit;opacity:.8}
+.cta .cmd{display:flex;flex-direction:column;gap:.6rem}
+.cta .cmd code{display:block;background:rgba(0,0,0,.25);color:var(--term-accent);border:1px solid rgba(255,255,255,.12);padding:.8rem 1rem;border-radius:8px;font-size:.9rem;white-space:nowrap;overflow-x:auto}
+@media (max-width:900px){.cta .wrap{grid-template-columns:1fr}}
+
+footer{padding:2.5rem 0 3rem;color:var(--ink-3);font-size:.85rem}
+footer .wrap{display:flex;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;align-items:center}
+footer nav{display:flex;gap:1.2rem;flex-wrap:wrap}
+footer a{text-decoration:none;color:var(--ink-2)}
+footer a:hover{color:var(--ink)}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="NoLockIn, accueil">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="2" y="2" width="28" height="28" rx="4" fill="var(--accent)"/>
+        <path d="M11 15V11.5a5 5 0 0 1 10 0" fill="none" stroke="var(--accent-on)" stroke-width="2.6" stroke-linecap="round" transform="rotate(-28 16 12)"/>
+        <rect x="8.5" y="15" width="15" height="11" rx="2" fill="var(--accent-on)"/>
+        <path d="M16 18.5v3" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      NoLockIn
+    </a>
+    <ul>
+      <li><a href="#console">Console</a></li>
+      <li><a href="#sortie">Sortie</a></li>
+      <li><a href="#comment">Fonctionnement</a></li>
+      <li><a href="#prix">Prix</a></li>
+      <li><a href="#souverainete">Souveraineté</a></li>
+      <li><a href="docs/">Docs</a></li>
+    </ul>
+    <div class="actions">
+      <a class="btn ghost" href="docs/">Documentation</a>
+      <a class="btn primary" href="#start">Déployer</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-copy">
+      <span class="eyebrow">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h9M8 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 2v12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        PaaS open source · sortie incluse
+      </span>
+      <h1>Le PaaS que vous pouvez <span class="exit">quitter.</span></h1>
+      <p class="lede">Un fichier dans votre dépôt, puis <code>git push</code>. Grafana, logs, ArgoCD, TLS, autoscaling, staging et prod : tout est là dès la première minute. Vous payez à la seconde ce que vous consommez. Et le jour où vous voulez partir, la même plateforme s'installe sur votre cluster. Quatre commandes, un après-midi, zéro frais de sortie.</p>
+      <div class="hero-cta">
+        <a class="btn primary" href="#start">Déployer une app <kbd>git push</kbd></a>
+        <a class="btn ghost" href="#sortie">Voir comment on part</a>
+      </div>
+      <div class="hero-proof">
+        <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Apache-2.0</b>, tout le code</span>
+        <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>0 €</b> d'egress à la sortie</span>
+        <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Sortie <b>testée en CI</b> à chaque release</span>
+        <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Hébergé <b>en France</b>, sur Scaleway</span>
+      </div>
+    </div>
+
+    <div class="term" id="hero-term" aria-label="Démonstration du terminal">
+      <div class="term-tabs" role="tablist" aria-label="Scénario">
+        <button role="tab" aria-selected="true" data-scene="deploy">git push → prod</button>
+        <button role="tab" aria-selected="false" data-scene="exit">nlk exit cutover</button>
+      </div>
+      <div class="term-bar"><div class="dots"><i></i><i></i><i></i></div><span class="title" id="term-title">acme/shop-api · staging → prod · contexte : hosted</span></div>
+      <div class="term-body" id="term-body"></div>
+    </div>
+  </div>
+</section>
+
+<section id="garanties">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow ghost">Trois garanties, dans le code</span>
+      <h2>Pas une promesse commerciale. Des propriétés du produit.</h2>
+    </div>
+    <div class="guar">
+      <article>
+        <svg class="glyph" viewBox="0 0 40 40" aria-hidden="true"><path d="M14 12l-8 8 8 8M26 12l8 8-8 8M23 8l-6 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h3>Tout est open source</h3>
+        <p>Control plane, opérateur, CLI, chart Helm, metering, facturation, dashboards. Une licence, un dépôt. Il n'existe pas d'édition « entreprise » : le SSO, l'audit, les quotas et le multi-région sont dans le code public.</p>
+        <p class="fact"><b>Apache-2.0</b> · DCO, pas de CLA · aucune fonctionnalité réservée au cloud hébergé</p>
+      </article>
+      <article>
+        <svg class="glyph" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="13" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M20 12v8l5 3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h3>Paiement à la seconde</h3>
+        <p>vCPU consommé, mémoire réellement utilisée, stockage provisionné, trafic sortant. Pas de plan, pas de siège, pas de minimum. La facture est un dashboard Grafana : mêmes requêtes PromQL, mêmes chiffres, et <code>nlk usage explain</code> vous les montre.</p>
+        <p class="fact"><b>0,018 €</b> / vCPU-h · <b>0,0045 €</b> / GiB-h · un projet vide coûte 0 €</p>
+      </article>
+      <article>
+        <svg class="glyph" viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="6" width="18" height="28" rx="2" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M19 20h15M29 15l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h3>La sortie est une fonctionnalité</h3>
+        <p><code>nlk export</code> fonctionne même si le compte est impayé. Jamais bridé, sans frais d'egress. Le protocole complet (installer, exporter, importer, basculer, vérifier) est un test d'intégration qui bloque chaque release.</p>
+        <p class="fact"><b>4 commandes</b> · coupure mesurée <b>4 à 8 s</b> d'écritures · retour arrière 30 jours</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="console" class="console-sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow ghost">Tout fonctionne tout de suite</span>
+      <h2>Vos conteneurs, vos métriques, vos logs, votre arbre ArgoCD. Sans rien configurer.</h2>
+      <p class="lede">Ce que voit un développeur trente secondes après <code>nlk deploy</code>. Grafana et ArgoCD sont provisionnés par app, avec SSO. Les panneaux ci-dessous sont des données d'exemple.</p>
+    </div>
+
+    <div class="console" aria-label="Aperçu de la console NoLockIn">
+      <nav class="side" aria-label="Navigation console">
+        <div class="proj">projet · acme</div>
+        <a href="#console" class="on"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor"/><rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor"/><rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor"/><rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor"/></svg>Apps</a>
+        <a href="#console"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 12l4-5 3 3 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Métriques</a>
+        <a href="#console"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4h10M3 8h10M3 12h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Logs</a>
+        <a href="#console"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 5v3l2 1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Releases</a>
+        <a href="#console"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2l5 3v6l-5 3-5-3V5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Add-ons</a>
+        <div class="sep"></div>
+        <a href="#prix"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2 7h12" stroke="currentColor" stroke-width="1.6"/></svg>Facture</a>
+        <a href="#sortie"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3H3v10h3M9 8h5M11 5.5L13.5 8 11 10.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Sortie</a>
+      </nav>
+
+      <div class="main">
+        <div class="crumbs">acme-prod <span>/</span> <b>shop-api</b> <span>/</span> release #42</div>
+        <div class="apphead">
+          <h3>shop-api
+            <span class="pill good"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Healthy</span>
+            <span class="pill"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8A5 5 0 1 1 8 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 1v4h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Synced · prod/#42 · 7d9f2c1</span>
+          </h3>
+          <div class="toolbar">
+            <a class="btn ghost" href="#console">Ouvrir Grafana</a>
+            <a class="btn ghost" href="#console">Ouvrir ArgoCD</a>
+            <a class="btn ghost" href="#console">Logs</a>
+          </div>
+        </div>
+
+        <div class="tiles" id="tiles">
+          <div class="tile"><span class="k">Requêtes / s</span><span class="v tnum">1 284 <small>▲ 12 %</small></span><svg data-spark="312,318,305,340,362,355,371,398,405,392,420,441,437,455,462,478,470,491,503,498,512,528" viewBox="0 0 200 44" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+          <div class="tile"><span class="k">Latence p95</span><span class="v tnum">184 <small>ms</small></span><svg data-spark="210,205,198,222,215,190,187,201,195,182,188,176,180,192,185,178,181,174,179,186,180,184" viewBox="0 0 200 44" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+          <div class="tile"><span class="k">Erreurs 5xx</span><span class="v tnum">0,08 <small>%</small></span><svg data-spark="0.2,0.1,0.15,0.12,0.09,0.11,0.08,0.1,0.07,0.09,0.06,0.08,0.1,0.07,0.09,0.08,0.06,0.07,0.09,0.08,0.07,0.08" viewBox="0 0 200 44" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+          <div class="tile"><span class="k">CPU · 4 pods</span><span class="v tnum">1,42 <small>vCPU</small></span><svg data-spark="0.8,0.85,0.9,1.1,1.2,1.15,1.3,1.35,1.28,1.4,1.45,1.38,1.42,1.5,1.47,1.44,1.52,1.48,1.41,1.39,1.45,1.42" viewBox="0 0 200 44" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+        </div>
+
+        <div class="panes">
+          <div class="pane">
+            <div class="pane-h"><b><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2l5 3v6l-5 3-5-3V5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 8v6M3 5l5 3 5-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Arbre des ressources</b><span class="src">source : ArgoCD · acme/shop-api</span></div>
+            <ul class="tree">
+              <li><span class="kind">App</span><span class="name">shop-api</span><span class="st"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Healthy</span></li>
+              <li class="l1"><span class="kind">Rollout</span><span class="name">shop-api-web</span><span class="cnt">3/3 · canary 100 %</span><span class="st"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Healthy</span></li>
+              <li class="l2"><span class="kind">RS</span><span class="name">shop-api-web-7d9f</span><span class="cnt">3 pods</span></li>
+              <li class="l3"><span class="kind">Pod</span><span class="name">shop-api-web-7d9f-x2k8q</span><span class="st">Running</span></li>
+              <li class="l3"><span class="kind">Pod</span><span class="name">shop-api-web-7d9f-m8qzt</span><span class="st">Running</span></li>
+              <li class="l3"><span class="kind">Pod</span><span class="name">shop-api-web-7d9f-4hvbn</span><span class="st">Running</span></li>
+              <li class="l1"><span class="kind">Deploy</span><span class="name">shop-api-queue</span><span class="cnt">1/1</span><span class="st"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Healthy</span></li>
+              <li class="l1"><span class="kind">CronJob</span><span class="name">shop-api-cleanup</span><span class="cnt">03:00 Europe/Paris</span></li>
+              <li class="l1"><span class="kind">Svc</span><span class="name">shop-api-web</span><span class="cnt">ClusterIP</span></li>
+              <li class="l1"><span class="kind">Route</span><span class="name">api.acme.com</span><span class="st"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>TLS ok</span></li>
+              <li class="l1"><span class="kind">HPA</span><span class="name">shop-api-web</span><span class="cnt">min 2 · max 10 · 70 % CPU</span></li>
+              <li class="l1"><span class="kind">CNPG</span><span class="name">shop-api-db</span><span class="cnt">3 instances</span><span class="st"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Primary db-1</span></li>
+              <li class="l1"><span class="kind">Redis</span><span class="name">shop-api-cache</span><span class="cnt">512 MiB</span></li>
+            </ul>
+          </div>
+          <div class="pane">
+            <div class="pane-h"><b><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 7l2 1.5L5 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Conteneurs</b><span class="src">kubectl -n acme get pods</span></div>
+            <div style="overflow-x:auto">
+            <table class="pods">
+              <thead><tr><th>Pod</th><th>CPU</th><th>Mém.</th><th>Âge</th></tr></thead>
+              <tbody class="tnum">
+                <tr><td><span class="dot"></span>web-7d9f-x2k8q</td><td><i class="bar" style="width:38px"></i>0,38</td><td>301 Mi</td><td>2 j</td></tr>
+                <tr><td><span class="dot"></span>web-7d9f-m8qzt</td><td><i class="bar" style="width:35px"></i>0,35</td><td>296 Mi</td><td>2 j</td></tr>
+                <tr><td><span class="dot"></span>web-7d9f-4hvbn</td><td><i class="bar" style="width:41px"></i>0,41</td><td>312 Mi</td><td>14 min</td></tr>
+                <tr><td><span class="dot"></span>queue-5c1a-p9wtd</td><td><i class="bar" style="width:12px"></i>0,12</td><td>188 Mi</td><td>2 j</td></tr>
+                <tr><td><span class="dot"></span>db-1 <span style="color:var(--ink-3)">primary</span></td><td><i class="bar" style="width:22px"></i>0,22</td><td>842 Mi</td><td>31 j</td></tr>
+                <tr><td><span class="dot"></span>db-2</td><td><i class="bar" style="width:9px"></i>0,09</td><td>790 Mi</td><td>31 j</td></tr>
+              </tbody>
+            </table>
+            </div>
+            <div class="pane-h" style="border-top:1px solid var(--line)"><b><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4h10M3 8h10M3 12h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Logs</b><span class="src">Loki · {app="shop-api"}</span></div>
+            <div class="logs">
+              <div><span class="t">14:02:11.204</span> <span class="lvl">info</span> web  GET /v1/orders 200 41ms</div>
+              <div><span class="t">14:02:11.389</span> <span class="lvl">info</span> web  POST /v1/checkout 201 118ms</div>
+              <div><span class="t">14:02:12.010</span> <span class="lvl w">warn</span> queue retry job=email-4821 attempt=2</div>
+              <div><span class="t">14:02:12.442</span> <span class="lvl">info</span> web  GET /healthz 200 1ms</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="console-note">
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Un dashboard Grafana par app, par add-on, par projet</span>
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>ArgoCD en lecture pour tous, sync et rollback pour les owners</span>
+      <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Quatre alertes par défaut, routées vers Slack, e-mail ou PagerDuty</span>
+    </div>
+  </div>
+</section>
+
+<section id="sortie" class="exit-sec">
+  <div class="wrap">
+    <div class="panel">
+      <div class="copy">
+        <span class="eyebrow">Sortie de secours</span>
+        <h2>Partir prend un après-midi. Pas un trimestre.</h2>
+        <p class="lede">Installez NoLockIn sur votre cluster Kubernetes, exportez, importez, basculez. Vos développeurs gardent la même CLI, le même manifeste, les mêmes dashboards. Seul le contexte change.</p>
+        <svg class="pict" viewBox="0 0 180 120" aria-hidden="true">
+          <rect x="6" y="6" width="168" height="108" rx="8" fill="none" stroke="currentColor" stroke-width="3" opacity=".9"/>
+          <rect x="112" y="24" width="44" height="72" rx="2" fill="none" stroke="currentColor" stroke-width="3"/>
+          <path d="M112 24l30 8v72l-30-8" fill="currentColor" opacity=".25"/>
+          <circle cx="58" cy="36" r="8" fill="currentColor"/>
+          <path d="M58 46l-6 18 8 14M58 46l10 8 12-4M52 64l-14 8M62 80l4 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M70 100h30M92 92l8 8-8 8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <ol class="steps">
+        <li><span class="what">Installez la plateforme sur votre cluster</span><code>helm install nolockin oci://ghcr.io/nolockin/charts/nolockin -n nolockin-system --create-namespace</code><span class="when">5 à 8 minutes · n'importe quel Kubernetes ≥ 1.29</span></li>
+        <li><span class="what">Exportez votre projet, secrets chiffrés pour la cible</span><code>nlk export --project acme --to-context mon-cluster &gt; acme.nlkbundle</code><span class="when">jamais bridé · egress facturé 0 € · fonctionne même compte suspendu</span></li>
+        <li><span class="what">Importez : images copiées, add-ons restaurés, réplication continue</span><code>nlk import acme.nlkbundle --context mon-cluster</code><span class="when">Postgres en réplication logique, Redis en replica, S3 en miroir</span></li>
+        <li><span class="what">Basculez, vérifiez, gardez 30 jours pour revenir</span><code>nlk exit cutover --project acme --to mon-cluster &amp;&amp; nlk exit verify</code><span class="when">coupure mesurée en CI : 4 à 8 s d'écritures refusées, 0 erreur de lecture</span></li>
+      </ol>
+    </div>
+    <div class="exit-facts tnum">
+      <div><span class="n">4<small>commandes</small></span><span class="l">pour changer de cluster, orchestrées par la CLI</span></div>
+      <div><span class="n">0 €<small>egress</small></span><span class="l">le trafic d'export est exclu du metering</span></div>
+      <div><span class="n">30<small>jours</small></span><span class="l">de retour arrière possible après la bascule</span></div>
+      <div><span class="n">3<small>niveaux</small></span><span class="l">quitter notre cloud, quitter NoLockIn (<code>nlk render</code>), quitter Kubernetes</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="comment">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow ghost">Comment ça marche</span>
+      <h2>Une couche fine sur Kubernetes, faite de projets que vous connaissez déjà.</h2>
+      <p class="lede">Chaque brique est open source, choisie pour avoir une sortie standard. Rien de propriétaire sur le chemin d'une requête ni d'une donnée.</p>
+    </div>
+    <div class="flow">
+      <article>
+        <span class="tag">1 · Build</span>
+        <h3>Un commit devient une image OCI</h3>
+        <p>Buildpacks détectent le langage, ou votre Dockerfile. Image signée, SBOM générée, scan Trivy. Pas de runtime maison.</p>
+        <div class="oss"><span>Cloud Native Buildpacks</span><span>BuildKit</span><span>cosign</span></div>
+      </article>
+      <article>
+        <span class="tag">2 · Rendu</span>
+        <h3>Le manifeste devient du Kubernetes standard</h3>
+        <p>L'opérateur transforme <code>nolockin.yaml</code> en Deployments, HPA, HTTPRoutes, clusters Postgres. <code>nlk render</code> vous montre exactement ce YAML.</p>
+        <div class="oss"><span>controller-runtime</span><span>Gateway API</span><span>CloudNativePG</span></div>
+      </article>
+      <article>
+        <span class="tag">3 · Réconciliation</span>
+        <h3>ArgoCD applique et vous montre tout</h3>
+        <p>Chaque release est un commit dans un manifest store Git que vous pouvez cloner. ArgoCD synchronise, Argo Rollouts fait le canari, le rollback est un commit de plus.</p>
+        <div class="oss"><span>ArgoCD</span><span>Argo Rollouts</span><span>Git</span></div>
+      </article>
+      <article>
+        <span class="tag">4 · Observation</span>
+        <h3>Prometheus mesure, Grafana montre, la facture lit pareil</h3>
+        <p>Métriques et logs collectés sans agent. Les recording rules du metering sont publiques : la facture est recalculable.</p>
+        <div class="oss"><span>Prometheus</span><span>Grafana</span><span>Loki</span></div>
+      </article>
+    </div>
+
+    <div class="manifest">
+      <pre><span class="c"># nolockin.yaml · le seul fichier que vous écrivez</span>
+<span class="k">apiVersion:</span> nolockin.io/v1
+<span class="k">kind:</span> App
+<span class="k">metadata:</span> { <span class="k">name:</span> shop-api }
+<span class="k">spec:</span>                          <span class="c"># base commune</span>
+  <span class="k">source:</span> { <span class="k">git:</span> https://github.com/acme/shop-api }
+  <span class="k">services:</span>
+    - <span class="k">name:</span> web
+      <span class="k">port:</span> 8080
+      <span class="k">resources:</span> { <span class="k">cpu:</span> 500m, <span class="k">memory:</span> 512Mi }
+  <span class="k">workers:</span>
+    - { <span class="k">name:</span> queue, <span class="k">command:</span> [<span class="s">"node"</span>, <span class="s">"worker.js"</span>] }
+  <span class="k">addons:</span>
+    - { <span class="k">name:</span> db, <span class="k">type:</span> postgres }
+  <span class="k">env:</span>
+    <span class="k">DATABASE_URL:</span> { <span class="k">fromAddon:</span> db, <span class="k">key:</span> url }
+    <span class="k">STRIPE_KEY:</span>   { <span class="k">fromSecret:</span> stripe, <span class="k">key:</span> secret_key }
+
+<span class="k">environments:</span>                  <span class="c"># un projet chacun, un overlay chacun</span>
+  <span class="k">staging:</span>
+    <span class="k">project:</span> acme-staging
+    <span class="k">track:</span> main                <span class="c"># chaque push déploie</span>
+    <span class="k">services:</span> { <span class="k">web:</span> { <span class="k">scale:</span> { <span class="k">min:</span> 1, <span class="k">max:</span> 2 } } }
+    <span class="k">addons:</span>   { <span class="k">db:</span> { <span class="k">plan:</span> single, <span class="k">storage:</span> 5Gi } }
+  <span class="k">prod:</span>
+    <span class="k">project:</span> acme-prod           <span class="c"># pas de track : promotions seulement</span>
+    <span class="k">deploy:</span>
+      <span class="k">approval:</span> owner
+      <span class="k">strategy:</span> canary
+      <span class="k">canary:</span> { <span class="k">steps:</span> [10%, 50%, 100%], <span class="k">analysis:</span> { <span class="k">errorRate:</span> 1% } }
+      <span class="k">freeze:</span> [<span class="s">"Fri 16:00 - Mon 08:00 Europe/Paris"</span>]
+    <span class="k">services:</span> { <span class="k">web:</span> { <span class="k">scale:</span> { <span class="k">min:</span> 3, <span class="k">max:</span> 20 }, <span class="k">routes:</span> [{ <span class="k">host:</span> api.acme.com }] } }
+    <span class="k">addons:</span>   { <span class="k">db:</span> { <span class="k">plan:</span> ha, <span class="k">storage:</span> 50Gi } }</pre>
+      <div class="manifest-copy">
+        <h3>Un fichier, versionné avec votre code. Staging et prod dedans.</h3>
+        <p class="lede" style="font-size:1rem">Le fichier déclare la politique : ce qui tourne, où, comment ça sort. La version déployée, elle, n'y est jamais écrite. Pas de commit « bump prod », pas de boucle de build, pas d'historique pollué.</p>
+        <ul>
+          <li><b>Un push déploie</b> l'environnement qui suit la branche. La prod ne suit rien : elle reçoit <code>nlk promote</code>, sans rebuild, le digest exact validé en staging.</li>
+          <li><b>La release se contrôle en YAML</b> : checks CI requis, approbation d'un owner, canari analysé sur vos métriques, fenêtres de gel, previews par PR.</li>
+          <li><b>Un overlay par environnement</b>, pas deux fichiers qui divergent. La différence prod tient en dix lignes et se relit en tant que telle.</li>
+          <li><b>Aucun champ propriétaire</b>, les secrets jamais dedans, le même fichier sur notre cloud, sur votre cluster, sur un <code>kind</code> local.</li>
+        </ul>
+        <div><a class="btn ghost" href="docs/reference/manifeste/">Lire la spec du manifeste</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="prix" class="console-sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow ghost">Prix</span>
+      <h2>Quatre lignes sur la facture. Zéro sur votre cluster.</h2>
+      <p class="lede">Mesuré à la seconde, facturé au mois. La grille est un fichier YAML versionné dans le dépôt. Toute hausse a 90 jours de préavis, jamais rétroactive.</p>
+    </div>
+    <div class="pricing">
+      <table class="price-table tnum">
+        <thead><tr><th>Ressource</th><th>Cloud NoLockIn</th><th>Votre cluster</th></tr></thead>
+        <tbody>
+          <tr><td>vCPU consommé<small>usage réel, pas la réservation</small></td><td class="mono">0,018 € / vCPU-h</td><td class="you">0 €</td></tr>
+          <tr><td>Mémoire<small>working set</small></td><td class="mono">0,0045 € / GiB-h</td><td class="you">0 €</td></tr>
+          <tr><td>Stockage<small>volumes, snapshots, logs</small></td><td class="mono">0,09 € / GiB-mois</td><td class="you">0 €</td></tr>
+          <tr><td>Trafic sortant<small>100 GiB / mois offerts</small></td><td class="mono">0,02 € / GiB</td><td class="you">0 €</td></tr>
+          <tr><td>Egress de sortie<small>export, migration</small></td><td class="mono">0 €</td><td class="you">0 €</td></tr>
+          <tr><td>Sièges, domaines, TLS, requêtes, dashboards<small>tout le reste</small></td><td class="mono">0 €</td><td class="you">0 €</td></tr>
+        </tbody>
+        <caption>Tarifs indicatifs de lancement, région fr-par (Scaleway, Paris). Le support (Business 490 €/mois, Enterprise sur devis) achète du temps humain, jamais une fonctionnalité.</caption>
+      </table>
+
+      <form class="estim" id="estim" aria-label="Estimateur de coût mensuel" onsubmit="return false">
+        <h3>Estimez votre mois</h3>
+        <div class="row"><label for="e-cpu">vCPU moyens consommés</label><output id="o-cpu" for="e-cpu">1,5</output><input type="range" id="e-cpu" min="0.1" max="32" step="0.1" value="1.5"></div>
+        <div class="row"><label for="e-mem">Mémoire moyenne (GiB)</label><output id="o-mem" for="e-mem">3</output><input type="range" id="e-mem" min="0.25" max="128" step="0.25" value="3"></div>
+        <div class="row"><label for="e-sto">Stockage (GiB)</label><output id="o-sto" for="e-sto">60</output><input type="range" id="e-sto" min="0" max="2000" step="10" value="60"></div>
+        <div class="row"><label for="e-egr">Trafic sortant (GiB / mois)</label><output id="o-egr" for="e-egr">250</output><input type="range" id="e-egr" min="0" max="5000" step="50" value="250"></div>
+        <div class="breakdown" id="breakdown" aria-live="polite"></div>
+        <div class="total tnum">
+          <div><span class="k">Cloud NoLockIn</span><span class="v" id="t-hosted">—</span></div>
+          <div><span class="k">Sur votre cluster</span><span class="v you">0 € <small>licence</small></span></div>
+        </div>
+        <p class="note">730 h / mois. Hors coût de vos propres nœuds en self-hosted. Les mêmes chiffres apparaissent dans le dashboard « Facture » avec la requête PromQL de chaque ligne.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section id="souverainete">
+  <div class="wrap">
+    <div class="sov">
+      <div class="sov-copy">
+        <span class="eyebrow ghost">Où ça tourne aujourd'hui</span>
+        <h2>Français. Hébergé en France. Souverain à 100 %, aujourd'hui.</h2>
+        <p class="lede">NoLockIn est conçu et opéré par une équipe française. Le cloud hébergé tourne sur un cluster Kubernetes Scaleway, région Paris. Vos conteneurs, vos bases, vos sauvegardes, vos logs et vos métriques ne quittent pas le territoire français. Aucun hyperscaler américain sur le chemin de la donnée.</p>
+        <div class="plate" aria-label="Hébergé en France, région Paris"><span class="fr">FR</span><span class="txt">fr-par <b>Scaleway Kapsule</b></span></div>
+      </div>
+      <div class="sov-grid">
+        <article><span class="k">Équipe</span><h3>Une société française</h3><p>Droit français, contrat en français, interlocuteurs en France. Les engagements de sortie sont dans nos conditions générales, opposables devant un tribunal français.</p></article>
+        <article><span class="k">Hébergeur</span><h3>Scaleway, région Paris</h3><p>Cluster Kubernetes managé Kapsule, stockage bloc et objet Scaleway, dans des datacenters situés en France, opérés par une entreprise française.</p></article>
+        <article><span class="k">Données</span><h3>Tout reste en France</h3><p>Registry d'images, Postgres, Redis, stockage objet, sauvegardes, logs Loki, métriques Prometheus : même région, même juridiction. Pas de transfert hors Union européenne.</p></article>
+        <article><span class="k">Conformité</span><h3>RGPD sans acrobatie</h3><p>Pas de sous-traitant hébergeur soumis à une législation extraterritoriale. Liste des sous-traitants publique, DPA standard, attestation de suppression signée à la sortie.</p></article>
+      </div>
+    </div>
+    <div class="sov-note">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span><b>Une seule région pour l'instant, et on le dit.</b> Une deuxième région européenne est prévue sur la roadmap. Elle sera annoncée, jamais imposée : un projet ne change pas de région sans une action de votre part. Et si vous préférez votre propre cluster, chez l'hébergeur de votre choix, c'est justement ce que NoLockIn permet.</span>
+    </div>
+  </div>
+</section>
+
+<section id="jamais">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow ghost">Engagements</span>
+      <h2>Ce qu'on ne fera jamais.</h2>
+      <p class="lede">Écrit dans les conditions du cloud hébergé, et pour la plupart, rendu impossible par la façon dont le produit est construit.</p>
+    </div>
+    <ul class="never">
+      <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div><b>Changer de licence</b>Pas de BSL, pas de SSPL, pas de « source available ». Le DCO rend un changement unilatéral pratiquement impossible.</div></li>
+      <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div><b>Facturer la sortie</b>Ni frais d'egress sur l'export, ni frais de « désactivation », ni délai artificiel.</div></li>
+      <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div><b>Réserver une fonctionnalité au cloud hébergé</b>Hébergé et self-hosted exécutent le même code, le même chart, avec un seul flag de facturation.</div></li>
+      <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div><b>Bloquer un export pour impayé</b>Les endpoints d'export ne vérifient pas l'état du compte. C'est testé.</div></li>
+      <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div><b>Augmenter les prix sans préavis</b>90 jours minimum, jamais rétroactif. Les baisses sont immédiates.</div></li>
+      <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div><b>Fermer sans vous laisser partir</b>12 mois de préavis avant tout arrêt du cloud hébergé, assistance à la migration incluse.</div></li>
+    </ul>
+  </div>
+</section>
+
+<section id="preuve" class="console-sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow ghost">Preuve</span>
+      <h2>La sortie est un test d'intégration. Il bloque chaque release.</h2>
+    </div>
+    <div class="proof">
+      <div class="proof-copy">
+        <p class="lede">À chaque commit sur <code>main</code>, la CI monte deux clusters, déploie l'app de référence sur le premier avec du trafic et des écritures continues, puis exécute le protocole de sortie complet vers le second. Coupure mesurée, comptages comparés, checksums vérifiés. Si ça casse, rien ne sort.</p>
+        <p class="lede" style="font-size:1rem">Le rapport de ce job est publié sur cette page à chaque release. Ce n'est pas un argument marketing, c'est un artefact CI.</p>
+        <div><a class="btn ghost" href="docs/architecture/adr/0006/">Lire l'ADR-0006</a></div>
+      </div>
+      <div class="term">
+        <div class="term-bar"><div class="dots"><i></i><i></i><i></i></div><span class="title">ci · exit-e2e · main@7d9f2c1</span></div>
+        <div class="term-body" style="font-size:13px"><span class="dim">▸ install</span>   source(kind)  <span class="ok">ok</span>  6m41s
+<span class="dim">▸ install</span>   target(kind)  <span class="ok">ok</span>  6m38s
+<span class="dim">▸ deploy</span>    reference-app → source  <span class="ok">ok</span>  1m52s
+<span class="dim">▸ load</span>      1 200 rps · 80 writes/s  <span class="ok">running</span>
+<span class="dim">▸ export</span>    2.3 GiB · signed · egress-class=export  <span class="ok">ok</span>  0m48s
+<span class="dim">▸ import</span>    images 6/6 · pg replication lag 0.4s  <span class="ok">ok</span>  2m10s
+<span class="dim">▸ cutover</span>   writes refused <span class="warn">5.8s</span> · read errors 0  <span class="ok">ok</span>
+<span class="dim">▸ verify</span>    rows 4 812 991 = 4 812 991 · s3 checksums 3 417/3 417  <span class="ok">ok</span>
+<span class="dim">▸ rollback</span>  writes refused <span class="warn">6.1s</span> · read errors 0  <span class="ok">ok</span>
+<span class="dim">▸ usage</span>     source egress billed for export: <span class="ok">0.00 €</span>
+
+<span class="ok">✔ exit-e2e passed</span>  <span class="dim">23m17s · release 0.9.4 unblocked</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="start" class="cta">
+  <div class="wrap">
+    <div>
+      <h2>Déployez maintenant. Partez quand vous voulez.</h2>
+      <p class="lede">Un fichier généré, un push, une app en ligne en moins de deux minutes, avec Grafana, ArgoCD, TLS et autoscaling. Sans carte bancaire pour les 300 premières minutes de build et 100 GiB de trafic.</p>
+    </div>
+    <div class="cmd">
+      <code>curl -fsSL https://get.nolockin.io | sh</code>
+      <code>nlk init &amp;&amp; git push</code>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.4rem">
+        <a class="btn primary" href="https://github.com/do-now-io/nolockin" rel="noopener">Voir le code sur GitHub</a>
+        <a class="btn ghost" href="docs/">Lire la documentation</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>NoLockIn · PaaS open source, Apache-2.0 · Fait pour être quitté.</span>
+    <nav>
+      <a href="https://github.com/do-now-io/nolockin" rel="noopener">GitHub</a>
+      <a href="docs/">Documentation</a>
+      <a href="https://github.com/do-now-io/nolockin/blob/main/docs/04-exit-protocol.md" rel="noopener">Protocole de sortie</a>
+      <a href="https://github.com/do-now-io/nolockin/blob/main/docs/05-pricing-metering.md" rel="noopener">Grille de prix</a>
+      <a href="mailto:security@nolockin.io">Sécurité</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+  /* ---------- sparklines ---------- */
+  document.querySelectorAll('svg[data-spark]').forEach(function(svg){
+    var vals=svg.getAttribute('data-spark').split(',').map(Number);
+    var W=200,H=44,pad=3,n=vals.length;
+    var min=Math.min.apply(null,vals),max=Math.max.apply(null,vals);
+    if(max===min){max=min+1}
+    var x=function(i){return pad+i*(W-2*pad)/(n-1)};
+    var y=function(v){return H-pad-((v-min)/(max-min))*(H-2*pad-6)};
+    var d='';vals.forEach(function(v,i){d+=(i?' L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)});
+    var area=d+' L'+x(n-1).toFixed(1)+' '+(H-pad)+' L'+x(0).toFixed(1)+' '+(H-pad)+' Z';
+    var g1=Math.round(H*0.33),g2=Math.round(H*0.66);
+    svg.innerHTML='<line class="spark-grid" x1="0" x2="'+W+'" y1="'+g1+'" y2="'+g1+'"/>'+
+      '<line class="spark-grid" x1="0" x2="'+W+'" y1="'+g2+'" y2="'+g2+'"/>'+
+      '<path class="spark-area" d="'+area+'"/>'+
+      '<path class="spark-line" d="'+d+'"/>'+
+      '<circle class="spark-end" cx="'+x(n-1).toFixed(1)+'" cy="'+y(vals[n-1]).toFixed(1)+'" r="3.5"/>';
+  });
+
+  /* ---------- terminal scenes ---------- */
+  var scenes={
+    deploy:{title:'acme/shop-api · staging → prod · contexte : hosted',lines:[
+      ['cmd','git push origin main'],
+      ['dim','▸ nolockin  push abc123 → environnement staging (track: main)'],
+      ['dim','▸ checks    ci/test ✔ · ci/lint ✔   (deploy.requireChecks)'],
+      ['dim','▸ build     buildpacks · node 22 · cache hit · nolockin.yaml exclu'],
+      ['ok', '✔ image     ghcr.io/acme-staging/shop-api@sha256:4f1c…  38s'],
+      ['dim','▸ release   staging/#118 → manifest store → argocd Synced'],
+      ['dim','▸ rollout   web 0/1 → 1/1   queue 1/1'],
+      ['ok', '✔ live      staging/#118   https://staging-api.acme.com   1m41s'],
+      ['',   ''],
+      ['cmd','nlk promote staging prod'],
+      ['dim','▸ source    staging/#118 · sha abc123 · digest 4f1c… (aucun build)'],
+      ['dim','▸ diff      7 commits depuis prod/#41 · 1 changement de manifeste (web.scale.max 10 → 20)'],
+      ['warn','⏸ prod/#42  pending-approval · approval: owner'],
+      ['',   ''],
+      ['cmd','nlk releases approve prod/#42'],
+      ['dim','▸ commit    manifest store · projects/acme-prod/apps/shop-api/release.yaml'],
+      ['dim','▸ canary    10 % · errorRate 0.1 % · p95 302 ms   2m'],
+      ['dim','▸ canary    50 % · errorRate 0.2 % · p95 310 ms   2m'],
+      ['dim','▸ canary   100 % · web 3/3'],
+      ['ok', '✔ live      prod/#42   https://api.acme.com   tag nlk/prod → abc123   6m12s'],
+      ['dim','grafana   https://grafana.nolockin.cloud/d/acme-prod-shop-api'],
+      ['dim','argocd    https://argocd.nolockin.cloud/applications/acme-prod-shop-api'],
+    ]},
+    exit:{title:'acme/shop-api · hosted → mon-cluster',lines:[
+      ['cmd','helm install nolockin oci://ghcr.io/nolockin/charts/nolockin -n nolockin-system --create-namespace'],
+      ['ok', '✔ nolockin 0.9.4 installed · api, argocd, grafana, loki, cnpg, gateway ready   6m12s'],
+      ['cmd','nlk export --project acme --to-context mon-cluster > acme.nlkbundle'],
+      ['dim','▸ manifests 3 apps · secrets age-encrypted → mon-cluster · images 6 · pg base backup 2.1 GiB'],
+      ['ok', '✔ acme.nlkbundle  2.3 GiB · signed · egress-class=export (0.00 €)   48s'],
+      ['cmd','nlk import acme.nlkbundle --context mon-cluster'],
+      ['dim','▸ images    crane copy 6/6 · digests verified'],
+      ['dim','▸ addons    db: restore + logical replication lag 0.4s · cache: replica · uploads: mirror 3 417 objects'],
+      ['ok', '✔ imported  routes in shadow mode · https://shadow.api.acme.mon-cluster   2m10s'],
+      ['cmd','nlk exit cutover --project acme --to mon-cluster'],
+      ['dim','▸ 1/9 target Ready · lag 0.3s'],
+      ['dim','▸ 3/9 workers & crons paused on hosted'],
+      ['warn','▸ 4/9 hosted db read-only'],
+      ['dim','▸ 5/9 replication drained · target promoted'],
+      ['dim','▸ 6/9 hosted routes → 307 · target routes live'],
+      ['dim','▸ 8/9 workers & crons resumed on mon-cluster'],
+      ['ok', '✔ cutover   writes refused 5.8s · read errors 0'],
+      ['cmd','nlk exit verify --project acme --to mon-cluster'],
+      ['ok', '✔ rows 4 812 991 = 4 812 991 · s3 3 417/3 417 · tls ok · alerts quiet'],
+      ['cmd','nlk context use mon-cluster'],
+      ['ok', '✔ contexte courant : mon-cluster   (hosted conservé en lecture seule 30 jours)'],
+    ]},
+  };
+  var body=document.getElementById('term-body'),title=document.getElementById('term-title');
+  var tabs=document.querySelectorAll('.term-tabs [role=tab]');
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var timer=null,current='deploy';
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+  function render(k,t){
+    if(k==='cmd')return '<span class="prompt">$</span> '+esc(t);
+    if(k==='url')return '<span class="url">'+esc(t)+'</span>';
+    if(!k)return '';
+    return '<span class="'+k+'">'+esc(t)+'</span>';
+  }
+  function play(name){
+    current=name;clearTimeout(timer);
+    var sc=scenes[name];title.textContent=sc.title;
+    tabs.forEach(function(b){b.setAttribute('aria-selected',String(b.dataset.scene===name))});
+    if(reduce){body.innerHTML=sc.lines.map(function(l){return render(l[0],l[1])}).join('\n');return}
+    body.innerHTML='';var i=0;
+    function step(){
+      if(i>=sc.lines.length){body.innerHTML+='\n<span class="prompt">$</span> <span class="cursor"></span>';timer=setTimeout(function(){play(name==='deploy'?'exit':'deploy')},9000);return}
+      var l=sc.lines[i++];
+      if(l[0]==='cmd'){typeCmd(l[1],function(){timer=setTimeout(step,260)})}
+      else{body.innerHTML+=(body.innerHTML?'\n':'')+render(l[0],l[1]);timer=setTimeout(step,l[0]==='ok'?520:180)}
+    }
+    function typeCmd(text,done){
+      body.innerHTML+=(body.innerHTML?'\n':'')+'<span class="prompt">$</span> <span class="typing"></span><span class="cursor"></span>';
+      var span=body.querySelector('.typing:last-of-type'),cur=body.querySelector('.cursor'),j=0;
+      (function tick(){
+        if(j<=text.length){span.textContent=text.slice(0,j++);timer=setTimeout(tick,text.length>60?12:24)}
+        else{cur.remove();done()}
+      })();
+    }
+    step();
+  }
+  tabs.forEach(function(b){b.addEventListener('click',function(){play(b.dataset.scene)})});
+  play('deploy');
+
+  /* ---------- estimator ---------- */
+  var P={cpu:0.018,mem:0.0045,sto:0.09,egr:0.02},H=730,FREE_EGR=100;
+  var ids=['cpu','mem','sto','egr'];
+  var fmt=function(n){return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'};
+  var fmtN=function(n){return n.toLocaleString('fr-FR',{maximumFractionDigits:2})};
+  function calc(){
+    var v={};ids.forEach(function(k){v[k]=parseFloat(document.getElementById('e-'+k).value);document.getElementById('o-'+k).textContent=fmtN(v[k])});
+    var parts={
+      'CPU':v.cpu*P.cpu*H,
+      'Mémoire':v.mem*P.mem*H,
+      'Stockage':v.sto*P.sto,
+      'Egress':Math.max(0,v.egr-FREE_EGR)*P.egr
+    };
+    var total=0,max=0;Object.keys(parts).forEach(function(k){total+=parts[k];max=Math.max(max,parts[k])});
+    document.getElementById('t-hosted').innerHTML=fmt(total)+' <small>/ mois</small>';
+    var bd=document.getElementById('breakdown');bd.innerHTML='';
+    Object.keys(parts).forEach(function(k){
+      var w=max?Math.max(2,Math.round(parts[k]/max*100)):0;
+      bd.innerHTML+='<div><span>'+k+'</span><i style="width:'+w+'%"></i><b>'+fmt(parts[k])+'</b></div>';
+    });
+  }
+  ids.forEach(function(k){document.getElementById('e-'+k).addEventListener('input',calc)});
+  calc();
+})();
+</script>
+<!--NLK:END-->
+</body>
+</html>

@@ -1,0 +1,122 @@
+# App de référence NoLockIn : web + worker + cron + Postgres + Redis + bucket, deux environnements.
+# C'est aussi l'app utilisée par le job CI `exit-e2e` (docs/architecture/adr/0006-exit-is-a-ci-gate.md).
+#
+# Ce fichier déclare la POLITIQUE. La version déployée (digest, SHA) vit dans le manifest store,
+# jamais ici (docs/architecture/adr/0007-policy-in-repo-state-in-store.md).
+apiVersion: nolockin.io/v1
+kind: App
+metadata:
+  name: shop-api
+  labels:
+    team: checkout
+
+# ---------------------------------------------------------------------------
+# Base commune à tous les environnements
+# ---------------------------------------------------------------------------
+spec:
+  source:
+    git: https://github.com/acme/shop-api
+    build:
+      type: buildpacks
+
+  services:
+    - name: web
+      command: ["node", "server.js"]
+      port: 8080
+      resources: { cpu: 500m, memory: 512Mi }
+      scale: { min: 2, max: 10, targetCPU: 70 }
+      health: { path: /healthz }
+
+  workers:
+    - name: queue
+      command: ["node", "worker.js"]
+      resources: { cpu: 250m, memory: 256Mi }
+      scale:
+        min: 1
+        max: 5
+        targetQueue: { addon: cache, key: "jobs:pending", perPod: 100 }
+
+  crons:
+    - name: cleanup
+      schedule: "0 3 * * *"
+      timezone: Europe/Paris
+      command: ["node", "cleanup.js"]
+
+  addons:
+    - name: db
+      type: postgres
+      version: "16"
+    - name: cache
+      type: redis
+      version: "7"
+    - name: uploads
+      type: bucket
+
+  env:
+    NODE_ENV: production
+    DATABASE_URL: { fromAddon: db, key: url }
+    REDIS_URL:    { fromAddon: cache, key: url }
+    S3_BUCKET:    { fromAddon: uploads, key: bucket }
+    S3_ENDPOINT:  { fromAddon: uploads, key: endpoint }
+    STRIPE_KEY:   { fromSecret: stripe, key: secret_key }   # sk_test_ en staging, sk_live_ en prod : nlk secret set --env
+
+  observability:
+    metrics: { path: /metrics }
+    alerts:
+      errorRate: 5%
+      p95Latency: 800ms
+
+  deploy:
+    requireChecks: true      # un commit rouge ne produit pas de release
+    strategy: rolling
+
+# ---------------------------------------------------------------------------
+# Environnements : un projet chacun, un overlay chacun
+# ---------------------------------------------------------------------------
+environments:
+  staging:
+    project: acme-staging
+    track: main              # chaque push sur main → build → release staging
+    deploy:
+      previews: { enabled: true, ttl: 7d }   # une instance par PR : shop-api-pr-<n>
+    services:
+      web:
+        scale: { min: 1, max: 2 }
+        routes: [{ host: staging-api.acme.com }]
+    addons:
+      db: { plan: single, storage: 5Gi }
+      cache: { memory: 128Mi }
+    env:
+      LOG_LEVEL: debug
+    observability:
+      alerts: { notify: [slack:checkout-staging] }
+
+  prod:
+    project: acme-prod
+    # Pas de track : la prod ne suit rien. Elle reçoit `nlk promote staging prod`
+    # (même digest, aucun build) ou un `nlk deploy --env prod --ref` explicite.
+    deploy:
+      approval: owner        # nlk releases approve prod/#<n>
+      strategy: canary
+      canary:
+        steps: [10%, 50%, 100%]
+        interval: 2m
+        analysis: { errorRate: 1%, p95Latency: 500ms }
+        onFailure: rollback
+      freeze: ["Fri 16:00 - Mon 08:00 Europe/Paris"]
+      tagOnRelease: true     # tag nlk/prod sur le SHA, lecture seule
+    services:
+      web:
+        scale: { min: 3, max: 20 }
+        routes:
+          - { host: api.acme.com, redirectWWW: true }
+    addons:
+      db:
+        plan: ha
+        storage: 50Gi
+        backups: { schedule: "0 */6 * * *", retention: 30d }
+      cache: { memory: 512Mi }
+      uploads: { versioning: true }
+    observability:
+      alerts: { notify: [slack:checkout-alerts, pagerduty:checkout] }
+      logs: { retention: 30d }

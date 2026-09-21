@@ -1,0 +1,14 @@
+# Le plus petit manifeste valide : un seul environnement implicite.
+# metadata.project est le projet cible, spec.source.ref (défaut main) la branche suivie.
+# Chaque push sur main déploie. Sous-domaine fourni, 2 réplicas, TLS, tout le reste par défaut.
+apiVersion: nolockin.io/v1
+kind: App
+metadata:
+  name: hello
+  project: demo
+spec:
+  source:
+    git: https://github.com/nolockin/hello
+  services:
+    - name: web
+      port: 8080

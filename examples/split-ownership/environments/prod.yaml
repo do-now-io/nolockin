@@ -1,0 +1,22 @@
+# Overlay prod, relu par l'équipe plateforme (CODEOWNERS: /environments/prod.yaml @acme/platform).
+# Fusionné sur la base de ../nolockin.yaml. Pas de track : promotions uniquement.
+prod:
+  project: acme-prod
+  deploy:
+    approval: owner
+    strategy: canary
+    canary:
+      steps: [10%, 50%, 100%]
+      interval: 2m
+      analysis: { errorRate: 1%, p95Latency: 500ms }
+      onFailure: rollback
+    freeze: ["Fri 16:00 - Mon 08:00 Europe/Paris"]
+  services:
+    web:
+      scale: { min: 3, max: 20 }
+      routes: [{ host: api.acme.com }]
+  addons:
+    db:
+      plan: ha
+      storage: 50Gi
+      backups: { schedule: "0 */6 * * *", retention: 30d }
